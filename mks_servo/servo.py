@@ -141,7 +141,6 @@ class Servo(object):
         # Add timeout
         while self.get_motor_status() != MotorStatus.MOTOR_STOP:
             time.sleep(0.1)
-            print(self.get_motor_status())
 
     def get_encoder_value_addition(self) -> int:
         value = self._read_input_registers(

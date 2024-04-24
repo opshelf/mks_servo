@@ -1,10 +1,10 @@
 [tool.poetry]
-name = "mks-servo42c"
+name = "mks-servo"
 version = "0.1.0"
 description = ""
 authors = ["emgardner <gardner.ethan10@gmail.com>"]
 readme = "README.md"
-packages = [{include = "mks_servo42c"}]
+packages = [{include = "mks_servo"}]
 
 [tool.poetry.dependencies]
 python = "^3.10"
