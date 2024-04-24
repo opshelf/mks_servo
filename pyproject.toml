@@ -1,0 +1,19 @@
+[tool.poetry]
+name = "mks-servo42c"
+version = "0.1.0"
+description = ""
+authors = ["emgardner <gardner.ethan10@gmail.com>"]
+readme = "README.md"
+packages = [{include = "mks_servo42c"}]
+
+[tool.poetry.dependencies]
+python = "^3.10"
+pymodbus = {extras = ["serial"], version = "^3.6.8"}
+black = "^24.4.0"
+flake8 = "^7.0.0"
+mypy = "^1.9.0"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
