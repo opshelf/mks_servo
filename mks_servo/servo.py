@@ -68,7 +68,7 @@ class Enabled:
 
 class Servo(object):
     """
-    Modbus Driver for MKS SERVO42C
+    Modbus Driver for MKS SERVO42D and MKS SERVO57D
     https://github.com/makerbase-motor/MKS-SERVO57D/blob/master/User%20Manual/MKS%20SERVO42%2657D_RS485%20User%20Manual%20V1.0.4.pdf
     """
 
@@ -130,6 +130,8 @@ class Servo(object):
             HoldingRegisters.MOVE_ABSOLUTE_AXIS,
             [acceleration, velocity, hi_bytes[0], lo_bytes[0]],
         )
+    def get_real_time_speed(self) -> int:
+        return self._read_input_registers(InputRegisters.REAL_TIME_MOTOR_SPEED, 1).registers[0]
 
     def get_error_angle(self) -> int:
         return self._read_input_registers(InputRegisters.ERROR_ANGLE, 2)
@@ -140,7 +142,12 @@ class Servo(object):
     def wait_for_move_finished(self):
         # Add timeout
         while self.get_motor_status() != MotorStatus.MOTOR_STOP:
-            time.sleep(0.1)
+            time.sleep(0.05)
+
+    def wait_for_homing_finished(self):
+        # Homing timeout
+        while self.get_motor_status() == MotorStatus.MOTOR_HOMING or self.get_motor_status() != MotorStatus.MOTOR_STOP:
+            time.sleep(0.05)
 
     def get_encoder_value_addition(self) -> int:
         value = self._read_input_registers(
