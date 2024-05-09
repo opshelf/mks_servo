@@ -60,6 +60,10 @@ class EndLimit:
     DISABLE = 0x00
     ENABLE = 0x01
 
+class limitportremap:
+    DISABLE = 0x00
+    ENABLE = 0x01
+    
 
 class Enabled:
     DISABLE = 0x00
@@ -83,6 +87,13 @@ class Servo(object):
         )
         self._address = address
 
+    def connect(self):
+        self.client.connect()
+        
+    def close(self):
+        while self.client.is_socket_open() is True:
+            self.client.close()
+    
     @property
     def address(self):
         return self._address
@@ -116,6 +127,10 @@ class Servo(object):
             HoldingRegisters.MOVE_ABSOLUTE_PULSES,
             [acceleration, velocity, hi_bytes[0], lo_bytes[0]],
         )
+    
+    def get_pulses(self) -> int:
+        value = self._read_input_registers(InputRegisters.NUMBER_OF_PULSES, 2).registers
+        return u16s_to_i32(value[0], value[1])
 
     def go_to_axis_position(
         self,
@@ -142,12 +157,12 @@ class Servo(object):
     def wait_for_move_finished(self):
         # Add timeout
         while self.get_motor_status() != MotorStatus.MOTOR_STOP:
-            time.sleep(0.05)
+            time.sleep(0.1)
 
     def wait_for_homing_finished(self):
-        # Homing timeout
+        # Homing timeout, don't set sleep too low might make it too sensitive and skip commands after!
         while self.get_motor_status() == MotorStatus.MOTOR_HOMING or self.get_motor_status() != MotorStatus.MOTOR_STOP:
-            time.sleep(0.05)
+            time.sleep(0.1)
 
     def get_encoder_value_addition(self) -> int:
         value = self._read_input_registers(
@@ -201,12 +216,16 @@ class Servo(object):
 
     def set_axis_to_zero(self):
         return self._write_register(HoldingRegisters.SET_AXIS_TO_ZERO, 1)
-
+    
+    def set_limit_port_remap(self, endstopremap: limitportremap):
+        return self._write_register(HoldingRegisters.SET_LIMIT_PORT_REMAP, endstopremap)
     def go_home(self):
         return self._write_register(HoldingRegisters.GO_HOME, 1)
 
     def stop(self):
         return self._write_register(HoldingRegisters.ESTOP, 1)
+    
+
 
 
 #   """

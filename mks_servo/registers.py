@@ -2,7 +2,7 @@ class InputRegisters:
     ENCODER_CARRY_VALUE = 0x30  # Length 3 words i32 i16
     ENCODER_ADDITION_VALUE = 0x31  # Length 3 words  i48
     REAL_TIME_MOTOR_SPEED = 0x32  # Length 1 word int16
-    NUMBER_OF_PULSES = 0x33  # Length 1 word int16
+    NUMBER_OF_PULSES = 0x33  # Length 2 words i32 
     IO_PORT_STATUS = (
         0x34  # Length 1 word u8 bit3 OUT_2, bit2 OUT_1, bit1 IN_2, bit0 IN_1
     )
@@ -35,7 +35,7 @@ class HoldingRegisters:
     SET_AXIS_TO_ZERO = 0x92  # Length 1 word Boolean 01
     SET_SERIAL_MOTOR_MODE_ENABLE = 0xF3  # Length 1 word Boolean 00 unlocked 01 locked
     SET_HOME_PARAM = 0x90  # Length 3 words
-    SET_LIMIT_PORT_REMAP = 0x91  # Length 1 word Boolean 00 disabled 01 enabled
+    SET_LIMIT_PORT_REMAP = 0x9E  # Length 1 word Boolean 00 disabled 01 enabled
     ESTOP = 0xF7  # Length 1 word Boolean 01
     GO_HOME = 0x91  # Length 1 word Boolean 01
     SPEED_MODE = 0xF6  # Length 2 words
