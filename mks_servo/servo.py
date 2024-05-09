@@ -199,7 +199,7 @@ class Servo(object):
     def set_enable_active_level(self, value: EnableActiveLevel):
         return self._write_register(HoldingRegisters.SET_EN_LOGIC, value)
 
-    def set__motor_dir(self, value: MotorRotation):
+    def set_motor_dir(self, value: MotorRotation):
         return self._write_register(HoldingRegisters.SET_DIR, value)
 
     def set_shaft_locked(self, value: Enabled):
@@ -219,12 +219,12 @@ class Servo(object):
     
     def set_limit_port_remap(self, endstopremap: limitportremap):
         return self._write_register(HoldingRegisters.SET_LIMIT_PORT_REMAP, endstopremap)
+    
     def go_home(self):
         return self._write_register(HoldingRegisters.GO_HOME, 1)
 
     def stop(self):
         return self._write_register(HoldingRegisters.ESTOP, 1)
-    
 
 
 
