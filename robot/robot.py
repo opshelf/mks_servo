@@ -10,6 +10,7 @@ class Axis(object):
             self._direction = MotorRotation.CCW
             self._current = 3000
             self._workmode = WorkMode.SR_vFOC
+            self._position = -1
 
     @property
     def address(self):
@@ -27,6 +28,11 @@ class Axis(object):
     def workmode(self):
         return self._workmode
     
+    @property
+    def position(self):
+        return self._position
+
+    
     @address.setter
     def address(self, address: int=1):
         self._address = address
@@ -42,11 +48,15 @@ class Axis(object):
     @workmode.setter
     def workmode(self, workmode: WorkMode):
         self._workmode = workmode
+
+    @position.setter
+    def position(self, position: int):
+        self._position = position
     
 class Robot(object):
        
     def __init__(self, port: str):
-        self.axis_list = {}
+        self.axis_list = {str, Axis}
         self._Robot = Servo("/dev/tty.usbserial-AQ043LCZ", 0)
 
     def _get_axis(self, name: str):
@@ -57,9 +67,6 @@ class Robot(object):
 
         switch_axis= self._get_axis(name)
         self._Robot.address = switch_axis.address
-        self._Robot.set_motor_dir(switch_axis.direction)
-        self._Robot.set_work_current(switch_axis.current)
-        self._Robot.set_work_mode(switch_axis.workmode)
 
         return switch_axis
     
@@ -68,9 +75,10 @@ class Robot(object):
         self.axis_list[name] = axis
 
     def set_axis_work_mode(self, name: str, mode: WorkMode):
-        self._switch_axis(name)
+        switch_axis = self._switch_axis(name)
+        switch_axis.workmode = mode
         self._Robot.set_work_mode(mode)
-
+        
         return name, mode
 
     def set_axis_work_current(self, name: str, current: int):
@@ -79,6 +87,14 @@ class Robot(object):
         self._Robot.set_work_current(current)
         
         return name, current
+    
+    def set_axis_dir(self, name: str, direction: MotorRotation):
+        switch_axis = self._switch_axis(name)
+        switch_axis.direction = direction
+        self._Robot.set_motor_dir(direction)
+        
+        return name, direction
+
     
     def move_axis_by_position(self, name: str, acceleration: int, velocity: int, pulses: int, ):
         self._switch_axis(name)
@@ -89,11 +105,12 @@ class Robot(object):
 
 
     def move_axis_by_axis_position(self, name: str, acceleration: int, velocity: int, pulses: int, ):
-        self._switch_axis(name)
+        switch_axis = self._switch_axis(name)
         self._Robot.go_to_axis_position(acceleration,velocity,pulses)
         self._Robot.wait_for_move_finished()
-
-        return self._Robot.get_encoder_value_addition()
+        switch_axis.position = self._Robot.get_encoder_value_addition()
+        
+        return switch_axis.position
     
     def home_axis(self, name: str):
         self._switch_axis(name)
