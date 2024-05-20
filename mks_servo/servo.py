@@ -157,12 +157,12 @@ class Servo(object):
     def wait_for_move_finished(self):
         # Add timeout
         while self.get_motor_status() != MotorStatus.MOTOR_STOP:
-            time.sleep(0.1)
+            time.sleep(0.2)
 
     def wait_for_homing_finished(self):
         # Homing timeout, don't set sleep too low might make it too sensitive and skip commands after!
         while self.get_motor_status() == MotorStatus.MOTOR_HOMING or self.get_motor_status() != MotorStatus.MOTOR_STOP:
-            time.sleep(0.1)
+            time.sleep(0.2)
 
     def get_encoder_value_addition(self) -> int:
         value = self._read_input_registers(

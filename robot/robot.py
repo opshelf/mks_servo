@@ -1,6 +1,7 @@
 from mks_servo import Servo, WorkMode, HomeTrigger, MotorRotation, EndLimit, limitportremap
 
-
+import time
+from math import sqrt
 
 class Axis(object):
 
@@ -32,7 +33,6 @@ class Axis(object):
     def position(self):
         return self._position
 
-    
     @address.setter
     def address(self, address: int=1):
         self._address = address
@@ -56,7 +56,7 @@ class Axis(object):
 class Robot(object):
        
     def __init__(self, port: str):
-        self.axis_list = {str, Axis}
+        self.axis_list = {str: Axis}
         self._Robot = Servo("/dev/tty.usbserial-AQ043LCZ", 0)
 
     def _get_axis(self, name: str):
@@ -97,14 +97,61 @@ class Robot(object):
 
     
     def move_axis_by_position(self, name: str, acceleration: int, velocity: int, pulses: int, ):
-        self._switch_axis(name)
+        switch_axis = self._switch_axis(name)
         self._Robot.go_to_position(acceleration,velocity,pulses)
         self._Robot.wait_for_move_finished()
+        switch_axis.position = self._Robot.get_encoder_value_addition()
 
         return self._Robot.get_pulses()
 
+    def move_xz_axis_by_position(self, xname: str, zname: str, xpulses: int, zpulses: int, velocity: int, acceleration: int):
+        velocity_x = -1
+        velocity_z = -1 
+        m_step = 16
+        step = 200
+        time_to_increase_velocity_by_one_in_ms  = ( ( 256 - acceleration ) * 50 ) / 1000
+        
+        revolutions_x = xpulses / (m_step*step)
+        revolutions_z = zpulses / (m_step*step)
 
-    def move_axis_by_axis_position(self, name: str, acceleration: int, velocity: int, pulses: int, ):
+        time_to_rotate_x_no_accel = revolutions_x / ( velocity_x / 60 )
+        time_to_rotate_z_no_accel = revolutions_x / ( velocity_x / 60 )
+
+        time_to_accelerate_x = velocity_x * time_to_increase_velocity_by_one_in_ms
+        revolutions_in_acceleration_x = ( ( velocity_x / 60 ) * ( time_to_accelerate_x / 1000 ) ) / 2
+
+        time_to_accelerate_z = velocity_z * time_to_increase_velocity_by_one_in_ms
+        revolutions_in_acceleration_z = ( ( velocity_z / 60 ) * ( time_to_accelerate_z / 1000 ) ) / 2
+
+        if time_to_accelerate_x / 1000 > time_to_rotate_x_no_accel:
+            velocity_x = sqrt((600*revolutions_x)/(256-acceleration))
+            time_to_accelerate_x = velocity_x * time_to_increase_velocity_by_one_in_ms
+        if time_to_accelerate_z / 1000 > time_to_rotate_z_no_accel:
+            velocity_z = sqrt((600*revolutions_z)/(256-acceleration))
+            time_to_accelerate_z = velocity_z * time_to_increase_velocity_by_one_in_ms        
+        if xpulses > zpulses:
+            velocity_z
+
+        if zpulses > xpulses:
+            velocity_x
+        # time_to_rotate_x = ( revolutions_x - (2 * revolutions_in_acceleration_x ) ) / (velocity_x / 60 ) 
+        time_to_rotate_x = ( revolutions_x / (velocity_x / 60 )) - ( time_to_accelerate_x / 1000 )
+        time_to_rotate_z = ( revolutions_z / (velocity_z / 60 )) - ( time_to_accelerate_z / 1000 )
+        total_time_x = ( time_to_accelerate_x / 500 ) + time_to_rotate_x
+        total_time_z = ( time_to_accelerate_z / 500 ) + time_to_rotate_z
+
+
+
+        self._Robot.address = 3
+        self._Robot.go_to_position(174,2279,640000)
+        self._Robot.address = 2
+        self._Robot.go_to_position(174,1140,320000)
+        self._Robot.wait_for_move_finished()
+        return
+
+    def move_axis_by_axis_position(self, name: str, acceleration: int, velocity : int, pulses: int, ):
+
+        # use if you dare, is the value acquired from encoder which is off by 15 encoder units from pulse * 5.12
         switch_axis = self._switch_axis(name)
         self._Robot.go_to_axis_position(acceleration,velocity,pulses)
         self._Robot.wait_for_move_finished()
@@ -116,6 +163,8 @@ class Robot(object):
         self._switch_axis(name)
         self._Robot.go_home()
         self._Robot.wait_for_homing_finished()
+        time.sleep(1)
+        
 
     def stop_by_axis(self, name: str):
         self._switch_axis(name)
