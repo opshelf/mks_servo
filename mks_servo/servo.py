@@ -3,13 +3,12 @@ import pymodbus.client as ModbusClient
 import struct
 import time
 from .registers import InputRegisters, HoldingRegisters
-
+from enum import Enum
 
 class ZeroStatus:
     ZERO_IN_PROGRESS = 0
     ZERO_SUCCESS = 1
     ZERO_FAILURE = 2
-
 
 class WorkMode:
     CR_OPEN = 0
@@ -18,7 +17,12 @@ class WorkMode:
     SR_OPEN = 3
     SR_CLOSE = 4
     SR_vFOC = 5
-
+#mode = 0 CR_OPEN
+#mode = 1 CR_CLOSE
+#mode = 2 CR_vFOC
+#mode = 3 SR_OPEN
+#mode = 4 SR_CLOSE
+#mode = 5 SR_vFOC
 
 class MotorRotation:
     CW = 0
@@ -60,7 +64,7 @@ class EndLimit:
     DISABLE = 0x00
     ENABLE = 0x01
 
-class limitportremap:
+class LimitPortRemap:
     DISABLE = 0x00
     ENABLE = 0x01
     
@@ -68,7 +72,6 @@ class limitportremap:
 class Enabled:
     DISABLE = 0x00
     ENABLE = 0x01
-
 
 class Servo(object):
     """
@@ -216,17 +219,24 @@ class Servo(object):
 
     def set_axis_to_zero(self):
         return self._write_register(HoldingRegisters.SET_AXIS_TO_ZERO, 1)
-    
-    def set_limit_port_remap(self, endstopremap: limitportremap):
+
+    def set_limit_port_remap(self, endstopremap: LimitPortRemap):
         return self._write_register(HoldingRegisters.SET_LIMIT_PORT_REMAP, endstopremap)
-    
+
     def go_home(self):
         return self._write_register(HoldingRegisters.GO_HOME, 1)
 
     def stop(self):
         return self._write_register(HoldingRegisters.ESTOP, 1)
 
+    def release_rotor_lock(self):
+        return self._write_register(HoldingRegisters.RELEASE_SHAFT_PROTECTION, 1)
 
+    def get_rotor_lock(self):
+        return self._read_input_registers(InputRegisters.SHAFT_PROTECTION, 1).registers
+
+    def get_enabled(self) -> int:
+        return self._read_input_registers(InputRegisters.EN_PIN_STATUS, 1).registers
 
 #   """
 #   def get_encoder_value_carry(self) -> int:
